@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Route Finder</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+       
+      background-size: cover;
+      background-position: center;
+
+        }
+        span{
+                margin-left: 2em;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .header img {
+            height: 40px;
+        }
+        .search-container {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .search-container input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 200px;
+        }
+        .search-container button {
+            background-color: #d32f2f;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .map-container {
+            width: 100%;
+            height: 80vh;
+        }
+        .result {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, 0);
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 50%;
+            text-align: center;
+            display: none;
+        }
+        .graph-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 0);
+            width: 80%;
+            text-align: center;
+            display: none;
+        }
+        .graph-container img {
+            width: 100%;
+            max-width: 600px;
+            border: 2px solid #003366;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="data:image/jpeg;base64,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REBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERB/9k=" alt="Airline Logo">
+        <nav>
+            <span>BOOK & MANAGE</span>
+            <span>WHERE WE FLY</span>
+            <span>SUPPORT</span>
+        </nav>
+    </div>
+    
+    <div class="search-container">
+        <!-- <input type="text" id="from" placeholder="From">
+        <input type="text" id="to" placeholder="To"> -->
+        <label for="from">From:</label>
+<select id="from" name="from">
+  <option value="" disabled selected>Select departure airport</option>
+  <option value="IXJ">JAMMU</option>
+  <option value="ATQ">AMRITSAR</option>
+  <option value="IXC">CHANDIGARH</option>
+  <option value="DEL">DELHI</option>
+  <option value="DED">DEHRADUN</option>
+  <option value="JAI">JAIPUR</option>
+  <option value="UDR">UDAIPUR</option>
+  <option value="AMD">AHMEDABAD</option>
+  <option value="BOM">MUMBAI</option>
+  <option value="PNQ">PUNE</option>
+  <option value="GOI">GOA</option>
+  <option value="LKO">LUKHNOW</option>
+  <option value="VNS">VARANASI</option>
+  <option value="PAT">PATNA</option>
+  <option value="RPR">RAIPUR</option>
+  <option value="RNC">RANCHI</option>
+  <option value="BBI">BHUBHNESWAR</option>
+  <option value="CCU">KOLKATA</option>
+  <option value="IXB">BAGDOGRA</option>
+  <option value="HYD">HYDRABAD</option>
+</select>
+
+<br><br>
+
+<label for="to">To:</label>
+<select id="to" name="to">
+  <option value="" disabled selected>Select destination airport</option>
+  <option value="IXJ">JAMMU</option>
+  <option value="ATQ">AMRITSAR</option>
+  <option value="IXC">CHANDIGARH</option>
+  <option value="DEL">DELHI</option>
+  <option value="DED">DEHRADUN</option>
+  <option value="JAI">JAIPUR</option>
+  <option value="UDR">UDAIPUR</option>
+  <option value="AMD">AHMEDABAD</option>
+  <option value="BOM">MUMBAI</option>
+  <option value="PNQ">PUNE</option>
+  <option value="GOI">GOA</option>
+  <option value="LKO">LUKHNOW</option>
+  <option value="VNS">VARANASI</option>
+  <option value="PAT">PATNA</option>
+  <option value="RPR">RAIPUR</option>
+  <option value="RNC">RANCHI</option>
+  <option value="BBI">BHUBHNESWAR</option>
+  <option value="CCU">KOLKATA</option>
+  <option value="IXB">BAGDOGRA</option>
+  <option value="HYD">HYDRABAD</option>
+</select>
+
+
+        <button onclick="findRoute()">Search</button>
+    </div>
+    
+    <div class="map-container">
+        <iframe src="https://www.google.com/maps" width="100%" height="100%" style="border:0;"></iframe>
+    </div>
+    
+    <div id="result" class="result"></div>
+    
+    <div id="graph-container" class="graph-container">
+        <img id="graphImage" src="" alt="Graph will appear here">
+    </div>
+    
+    <script>
+        async function findRoute() {
+            const from = document.getElementById('from').value.trim().toUpperCase();
+            const to = document.getElementById('to').value.trim().toUpperCase();
+            
+            if (!from || !to) {
+                alert('Please enter both airports.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/find_alternative_paths?start=${from}&end=${to}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('result').innerHTML = `<b>Error:</b> ${data.error}`;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <b>🔴 Shortest Path:</b> ${data.shortest_path.path.join(' ➔ ')} (${data.shortest_path.distance} km)<br>
+                        <b>🟢 Alternative Path:</b> ${data.alternative_route ? data.alternative_route.path.join(' ➔ ') + ` (${data.alternative_route.distance} km)` : 'None'}
+                    `;
+                }
+                document.getElementById('result').style.display = 'block';
+                
+                // Fetch and display the graph
+                document.getElementById('graphImage').src = `http://127.0.0.1:5000/graph?start=${from}&end=${to}&t=${Date.now()}`;
+                document.getElementById('graph-container').style.display = 'block';
+            } catch (error) {
+                alert('Failed to fetch data.');
+            }
+        }
+    </script>
+</body>
+</html>
